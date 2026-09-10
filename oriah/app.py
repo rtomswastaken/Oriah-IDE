@@ -8,7 +8,17 @@ from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, Footer, Header, Label
 
-from oriah.state import AppState
+from oriah.state import AgentConfig, AppState
+from oriah.config import EngineConfig
+from oriah.engine import AsyncEngine
+from oriah.events import (
+    AgentThought,
+    SubagentSpawned,
+    TaskFinished,
+    TaskStarted,
+    ToolCallCompleted,
+    ToolCallRequested,
+)
 from oriah.widgets.add_agent_modal import AddAgentModal
 from oriah.widgets.agent_panel import AgentModePanel
 from oriah.widgets.checklist_panel import ChecklistPanel
@@ -180,17 +190,45 @@ class OriahIDE(App):
     def on_agent_mode_panel_prompt_submitted(
         self, event: AgentModePanel.PromptSubmitted
     ) -> None:
-        """Hook ready for teammate's backend AI model invocation."""
+        """Execute agent task via backend AsyncEngine."""
         self.set_status(f"⚡ Dispatched prompt to {event.agent.name}...")
+        self.run_worker(self._execute_backend_agent(event.agent, event.prompt), exclusive=False)
 
-        # Simulation / stub response hook for testing UI feedback
-        def _simulate_backend_reply() -> None:
-            agent_panel = self.query_one(AgentModePanel)
-            agent_panel.append_log(
-                f"🤖 [{event.agent.name}] Ready for backend hook. Teammate can bind API in `on_agent_mode_panel_prompt_submitted`."
-            )
-
-        self.set_timer(0.8, _simulate_backend_reply)
+    async def _execute_backend_agent(self, agent: AgentConfig, prompt: str) -> None:
+        agent_panel = self.query_one(AgentModePanel)
+        config = EngineConfig(
+            model=agent.model if agent.model else "qwen2.5-coder:14b",
+            workspace_root=str(self.state.root_dir),
+        )
+        engine = AsyncEngine(config=config)
+        try:
+            async for ev in engine.run(prompt):
+                if isinstance(ev, TaskStarted):
+                    self.set_status(f"🚀 Task started ({ev.task_id[:8]})...")
+                elif isinstance(ev, AgentThought):
+                    agent_panel.append_log(f"💭 [{ev.agent_id}] {ev.thought}")
+                elif isinstance(ev, ToolCallRequested):
+                    agent_panel.append_log(f"  🔧 Tool: {ev.tool_name}({list(ev.arguments.keys())})")
+                elif isinstance(ev, ToolCallCompleted):
+                    if ev.error:
+                        agent_panel.append_log(f"  ❌ Error: {ev.error}")
+                    else:
+                        snippet = (ev.result or "")[:80].replace("\n", " ")
+                        agent_panel.append_log(f"  ✔ Result: {snippet}...")
+                elif isinstance(ev, SubagentSpawned):
+                    agent_panel.append_log(f"  🤖 Spawned subagent [{ev.child_id}] ({ev.role})")
+                elif isinstance(ev, TaskFinished):
+                    if ev.status == "success":
+                        agent_panel.append_log(f"✅ Finished: {ev.summary}")
+                        self.set_status("Ready")
+                    else:
+                        agent_panel.append_log(f"❌ Failed: {ev.error}")
+                        self.set_status("Error")
+        except Exception as e:
+            agent_panel.append_log(f"⚠️ Agent error: {str(e)}")
+            self.set_status("Agent error")
+        finally:
+            await engine.aclose()
 
     def set_status(self, text: str) -> None:
         try:

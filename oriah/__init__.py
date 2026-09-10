@@ -1,3 +1,8 @@
-"""Oriah IDE - Terminal-based AI Agent IDE."""
+"""Oriah IDE - AI Agent Terminal Environment & Agentic Workflow Engine."""
 
-__version__ = "0.1.0"
+from oriah.app import OriahIDE
+from oriah.config import EngineConfig
+from oriah.engine import AsyncEngine
+from oriah.state import AppState
+
+__all__ = ["OriahIDE", "EngineConfig", "AsyncEngine", "AppState"]

@@ -1,2 +1,0 @@
-[console_scripts]
-oriah-agent = oriah.cli:main

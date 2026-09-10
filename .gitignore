@@ -38,3 +38,8 @@ Thumbs.db
 
 # Local agent config
 AGENTS.md
+
+# Packaging & cache
+*.egg-info/
+.pytest_cache/
+welcome.py
