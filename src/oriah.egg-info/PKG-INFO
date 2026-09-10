@@ -1,0 +1,19 @@
+Metadata-Version: 2.4
+Name: oriah
+Version: 0.1.0
+Summary: Headless local agentic workflow engine for Oriah IDE
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: pydantic>=2.0.0
+Requires-Dist: httpx>=0.27.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.23.0; extra == "dev"
+
+# Oriah IDE
+
+Modern extensible IDE workspace.
+
+## Development
+
+Project initialized and linked to [GitHub repository](https://github.com/rtomswastaken/Oriah-IDE).
