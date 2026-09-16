@@ -43,7 +43,7 @@ class AgentConfig:
     instructions: str = ""
     status: str = "Idle"
     badge_color: str = "#6366f1"
-    avatar: str = "🤖"
+    avatar: str = "◈"
     total_tokens: int = 0
     api_key: str = ""
     base_url: str = ""
@@ -79,7 +79,7 @@ class AgentConfig:
             instructions=data.get("instructions", ""),
             status=data.get("status", "Idle"),
             badge_color=data.get("badge_color", "#6366f1"),
-            avatar=data.get("avatar", "🤖"),
+            avatar=data.get("avatar", "◈"),
             total_tokens=data.get("total_tokens", 0),
             api_key=data.get("api_key", ""),
             base_url=data.get("base_url", ""),
@@ -118,9 +118,9 @@ class AppState:
         self.tabs: List[EditorTab] = []
         self.active_tab_index: int = 0
         self.agent_logs: List[str] = [
-            "⚡ Oriah IDE Agent System initialized.",
-            f"🧠 {len(self.agents)} agents configured. Active agent: {self.get_active_agent().name if self.get_active_agent() else 'None'}",
-            "💡 Press ⚙️ Manage Agents or Ctrl+M to configure multi-agent APIs.",
+            "◈ Oriah IDE Agent System initialized.",
+            f"◆ {len(self.agents)} agents configured. Active agent: {self.get_active_agent().name if self.get_active_agent() else 'None'}",
+            "✦ Press [Manage Agents] or Ctrl+M to configure multi-agent APIs.",
         ]
         self.terminal_history: List[str] = []
 
@@ -134,7 +134,7 @@ class AppState:
             }
             self.config_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
         except Exception as e:
-            self.agent_logs.append(f"⚠️ Failed to save agents to disk: {e}")
+            self.agent_logs.append(f"✕ Failed to save agents to disk: {e}")
 
     def load_agents_from_disk(self) -> bool:
         """Load agents from .oriah/agents.json if present."""
@@ -168,7 +168,7 @@ class AppState:
                 instructions="Expert code synthesis, refactoring, and test writing in any language.",
                 status="Idle",
                 badge_color="#38bdf8",
-                avatar="💎",
+                avatar="◈",
                 base_url="http://localhost:11434/v1",
             ),
             AgentConfig(
@@ -180,7 +180,7 @@ class AppState:
                 instructions="System design, architectural boundary verification, and implementation planning.",
                 status="Idle",
                 badge_color="#a855f7",
-                avatar="🏛️",
+                avatar="◆",
                 base_url="http://localhost:11434/v1",
             ),
             AgentConfig(
@@ -192,7 +192,7 @@ class AppState:
                 instructions="Technical rigor checks, security vulnerability screening, and code correctness.",
                 status="Idle",
                 badge_color="#22c55e",
-                avatar="🛡️",
+                avatar="✦",
                 base_url="https://generativelanguage.googleapis.com/v1beta",
             ),
         ]
@@ -223,7 +223,7 @@ class AppState:
         role: str,
         instructions: str = "",
         badge_color: str = "#ec4899",
-        avatar: str = "⚡",
+        avatar: str = "◈",
         api_key: str = "",
         base_url: str = "",
         temperature: float = 0.7,
@@ -247,7 +247,7 @@ class AppState:
         self.active_agent_id = new_agent.id
         self.save_agents_to_disk()
         self.agent_logs.append(
-            f"✨ Added new agent '{name}' [{provider} - {model}]. Role: {role}"
+            f"✓ Added new agent '{name}' [{provider} - {model}]. Role: {role}"
         )
         return new_agent
 
@@ -292,7 +292,7 @@ class AppState:
                 if badge_color is not None:
                     a.badge_color = badge_color
                 self.save_agents_to_disk()
-                self.agent_logs.append(f"🔧 Updated agent config: '{a.name}' [{a.model}]")
+                self.agent_logs.append(f"✓ Updated agent config: '{a.name}' [{a.model}]")
                 return True
         return False
 
@@ -306,7 +306,7 @@ class AppState:
                 self.active_agent_id = self.agents[0].id if self.agents else ""
             self.save_agents_to_disk()
             if deleted_agent:
-                self.agent_logs.append(f"🗑️ Removed agent: '{deleted_agent.name}'")
+                self.agent_logs.append(f"✕ Removed agent: '{deleted_agent.name}'")
             return True
         return False
 

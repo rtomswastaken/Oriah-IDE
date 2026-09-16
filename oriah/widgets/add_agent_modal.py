@@ -29,7 +29,7 @@ class AddAgentModal(ModalScreen[Optional[dict]]):
 
     def compose(self) -> ComposeResult:
         with Vertical(id="modal-dialog-box"):
-            yield Label("⚡ CONNECT NEW AGENT", classes="modal-title")
+            yield Label("◈ CONNECT NEW AGENT", classes="modal-title")
 
             yield Label("Agent Name:", classes="modal-field-label")
             yield Input(placeholder="e.g. Gemma Python Specialist", id="modal-name", classes="modal-input")

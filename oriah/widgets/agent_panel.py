@@ -30,7 +30,7 @@ class AgentCardWidget(Vertical):
             yield Label(self.agent.avatar, classes="agent-card-avatar")
             yield Label(self.agent.name, classes="agent-card-name")
 
-        yield Label(f"📦 {self.agent.model}", classes="agent-card-badge")
+        yield Label(f"◈ {self.agent.model}", classes="agent-card-badge")
         yield Label(f"Role: {self.agent.role}", classes="agent-card-role")
         yield Label(f"● {self.agent.status} ({self.agent.provider})", classes="agent-card-status")
 
@@ -49,7 +49,7 @@ class ManageAgentsButtonCard(Vertical):
         super().__init__(id=unique_id, classes="add-agent-card manage-agents-card")
 
     def compose(self) -> ComposeResult:
-        yield Label("⚙️", classes="add-agent-icon")
+        yield Label("◈", classes="add-agent-icon")
         yield Label("Manage Agents", classes="add-agent-text")
 
     def on_click(self) -> None:
@@ -131,7 +131,7 @@ class AgentModePanel(Vertical):
     def on_agent_card_widget_selected(self, event: AgentCardWidget.Selected) -> None:
         self.state.active_agent_id = event.agent.id
         self.refresh_cards()
-        self.append_log(f"🎯 Switched active agent to: {event.agent.name} ({event.agent.model})")
+        self.append_log(f"★ Switched active agent to: {event.agent.name} ({event.agent.model})")
 
     def on_manage_agents_button_card_clicked(self, event: ManageAgentsButtonCard.Clicked) -> None:
         self.post_message(self.ManageAgentsRequested())
@@ -156,7 +156,7 @@ class AgentModePanel(Vertical):
         if not agent:
             return
 
-        self.append_log(f"👤 User: {text}")
+        self.append_log(f"◈ User: {text}")
         self.append_log(f"{agent.avatar} {agent.name}: Processing request on active workspace...")
         self.post_message(self.PromptSubmitted(agent, text))
 

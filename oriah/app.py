@@ -52,7 +52,7 @@ class OriahIDE(App):
     def compose(self) -> ComposeResult:
         # Header banner
         with Horizontal(id="app-header"):
-            yield Label("⚡ ORIAH IDE", classes="app-title")
+            yield Label("◈ ORIAH IDE", classes="app-title")
             yield Label(f"  •  Workspace: /{self.state.root_dir.name}", id="header-workspace-label")
             yield Label("  •  v0.1.0 (Cursor Engine)", classes="app-version")
 
@@ -71,7 +71,7 @@ class OriahIDE(App):
                     # Tab switcher for bottom-right mode (Wireframe 1 vs 2)
                     with Horizontal(id="bottom-mode-tabs"):
                         yield Button(
-                            "🤖 Agent Mode",
+                            "◈ Agent Mode",
                             id="btn-mode-agent",
                             classes="mode-tab-btn active-mode",
                         )
@@ -168,7 +168,7 @@ class OriahIDE(App):
             agent_panel.refresh_cards()
             active = self.state.get_active_agent()
             if active:
-                self.set_status(f"⚙️ Configured agents: {len(self.state.agents)} | Active: {active.name}")
+                self.set_status(f"◈ Configured agents: {len(self.state.agents)} | Active: {active.name}")
                 try:
                     agent_label = self.query_one("#status-agent-label", Label)
                     agent_label.update(f"  |  Active Agent: {active.name}")
@@ -195,7 +195,7 @@ class OriahIDE(App):
         self, event: AgentModePanel.PromptSubmitted
     ) -> None:
         """Execute agent task via backend AsyncEngine."""
-        self.set_status(f"⚡ Dispatched prompt to {event.agent.name}...")
+        self.set_status(f"◈ Dispatched prompt to {event.agent.name}...")
         self.run_worker(self._execute_backend_agent(event.agent, event.prompt), exclusive=False)
 
     async def _execute_backend_agent(self, agent: AgentConfig, prompt: str) -> None:
@@ -210,31 +210,31 @@ class OriahIDE(App):
         try:
             async for ev in engine.run(prompt):
                 if isinstance(ev, TaskStarted):
-                    self.set_status(f"🚀 Task started ({ev.task_id[:8]})...")
+                    self.set_status(f"◈ Task started ({ev.task_id[:8]})...")
                 elif isinstance(ev, AgentThought):
-                    agent_panel.append_log(f"💭 [{ev.agent_id}] {ev.thought}")
+                    agent_panel.append_log(f"◈ [{ev.agent_id}] {ev.thought}")
                 elif isinstance(ev, ToolCallRequested):
-                    agent_panel.append_log(f"  🔧 Tool: {ev.tool_name}({list(ev.arguments.keys())})")
+                    agent_panel.append_log(f"  ◈ Tool: {ev.tool_name}({list(ev.arguments.keys())})")
                 elif isinstance(ev, ToolCallCompleted):
                     if ev.error:
-                        agent_panel.append_log(f"  ❌ Error: {ev.error}")
+                        agent_panel.append_log(f"  ✕ Error: {ev.error}")
                     else:
                         snippet = (ev.result or "")[:80].replace("\n", " ")
-                        agent_panel.append_log(f"  ✔ Result: {snippet}...")
+                        agent_panel.append_log(f"  ✓ Result: {snippet}...")
                         if ev.tool_name in ("write_file", "patch_file"):
                             self._refresh_workspace_ui()
                 elif isinstance(ev, SubagentSpawned):
-                    agent_panel.append_log(f"  🤖 Spawned subagent [{ev.child_id}] ({ev.role})")
+                    agent_panel.append_log(f"  ◈ Spawned subagent [{ev.child_id}] ({ev.role})")
                 elif isinstance(ev, TaskFinished):
                     if ev.status == "success":
-                        agent_panel.append_log(f"✅ Finished: {ev.summary}")
+                        agent_panel.append_log(f"✓ Finished: {ev.summary}")
                         self.set_status("Ready")
                     else:
-                        agent_panel.append_log(f"❌ Failed: {ev.error}")
+                        agent_panel.append_log(f"✕ Failed: {ev.error}")
                         self.set_status("Error")
                     self._refresh_workspace_ui()
         except Exception as e:
-            agent_panel.append_log(f"⚠️ Agent error: {str(e)}")
+            agent_panel.append_log(f"✕ Agent error: {str(e)}")
             self.set_status("Agent error")
         finally:
             await engine.aclose()

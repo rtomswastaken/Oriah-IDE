@@ -43,7 +43,7 @@ class DirectoryPanel(Vertical):
 
     def compose(self) -> ComposeResult:
         with Horizontal(classes="panel-header"):
-            yield Label("📁 DIRECTORY", classes="panel-title")
+            yield Label("◈ DIRECTORY", classes="panel-title")
             yield Label(f"/{self.root_path.name}", classes="panel-subtitle")
             yield Button("↻", id="btn-refresh-tree", classes="btn-mini")
 

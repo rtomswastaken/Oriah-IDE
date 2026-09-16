@@ -334,7 +334,43 @@ class TestOriahHeadlessApp(unittest.IsolatedAsyncioTestCase):
                 await pilot.pause(0.2)
                 self.assertNotIsInstance(app.screen, AgentManagerModal)
 
+    async def test_agent_manager_colorable_glyphs_and_provider_suggestions(self):
+        import tempfile
+        from oriah.widgets.agent_manager_modal import AgentManagerModal
+        from textual.widgets import Select, Button, Input, Label
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            app = OriahIDE(root_dir=temp_dir)
+            async with app.run_test() as pilot:
+                app.action_manage_agents()
+                await pilot.pause(0.2)
+                self.assertIsInstance(app.screen, AgentManagerModal)
+                modal = app.screen
+
+                # 1. Verify clean glyph filtering
+                self.assertEqual(modal._get_clean_glyph("🤖"), "◈")
+                self.assertEqual(modal._get_clean_glyph("💎"), "◈")
+                self.assertEqual(modal._get_clean_glyph("◆"), "◆")
+                self.assertEqual(modal._get_clean_glyph("✦"), "✦")
+
+                # 2. Verify dialog title and buttons contain colorable glyphs
+                title = str(modal.query_one("#manager-dialog-title", Label).render())
+                self.assertIn("◈", title)
+                self.assertNotIn("🤖", title)
+
+                # 3. Test switching provider updates model select options
+                provider_select = modal.query_one("#agent-form-provider", Select)
+                provider_select.value = "Anthropic"
+                await pilot.pause(0.2)
+                local_select = modal.query_one("#agent-form-local-models", Select)
+                self.assertIn("claude-3-5-sonnet", [val for _, val in local_select._options])
+
+                provider_select.value = "OpenAI"
+                await pilot.pause(0.2)
+                self.assertIn("gpt-4o", [val for _, val in local_select._options])
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

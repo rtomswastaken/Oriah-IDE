@@ -30,7 +30,7 @@ class ChecklistPanel(Vertical):
 
     def compose(self) -> ComposeResult:
         with Horizontal(classes="panel-header"):
-            yield Label("📋 AGENT REPORT & TASKS", classes="panel-title")
+            yield Label("◈ AGENT REPORT & TASKS", classes="panel-title")
             yield Label(
                 f"{self._completed_count()}/{len(self.state.checklist)}",
                 id="checklist-counter",
@@ -67,13 +67,13 @@ class ChecklistPanel(Vertical):
         active_agent = self.state.get_active_agent()
         agent_name = active_agent.name if active_agent else "None"
         return (
-            f"📊 **Agent Run Summary**\n\n"
+            f"◈ **Agent Run Summary**\n\n"
             f"• **Status**: In Progress ({progress:.1f}% complete)\n"
             f"• **Active Agent**: {agent_name}\n"
             f"• **Total Tasks**: {len(self.state.checklist)}\n"
             f"• **Verified Tasks**: {self._completed_count()}\n"
             f"• **Pending**: {len(self.state.checklist) - self._completed_count()}\n\n"
-            f"💡 **Recommendation**:\n"
+            f"✦ **Recommendation**:\n"
             f"Next step: Select remaining tasks or ask {agent_name} in Agent Mode."
         )
 

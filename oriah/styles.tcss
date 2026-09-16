@@ -448,16 +448,16 @@ AddAgentModal {
     text-style: bold;
 }
 
-/* Agent Manager Modal Dialog */
+/* Agent Manager Modal Dialog (Agent Studio) */
 AgentManagerModal {
     align: center middle;
 }
 
 #manager-dialog-box {
-    width: 96;
-    height: 36;
-    background: #141824;
-    border: thick #6366f1;
+    width: 98;
+    height: 38;
+    background: #0f1420;
+    border: thick #3b4252;
     padding: 1 2;
     layout: vertical;
 }
@@ -466,21 +466,38 @@ AgentManagerModal {
     height: 3;
     layout: horizontal;
     align: left middle;
-    border-bottom: solid #273142;
-    padding-bottom: 1;
+    border-bottom: solid #1e293b;
+    padding-bottom: 0;
+}
+
+#manager-title-group {
+    width: 1fr;
+    height: 3;
+    layout: horizontal;
+    align: left middle;
 }
 
 #manager-dialog-title {
-    width: 1fr;
     text-style: bold;
-    color: #818cf8;
+    color: #38bdf8;
 }
 
-.manager-btn-sm {
-    min-width: 8;
+#manager-dialog-subtitle {
+    color: #64748b;
+    margin-left: 1;
+}
+
+.manager-btn-nav {
+    min-width: 10;
     height: 3;
-    background: #273142;
-    color: #cbd5e1;
+    background: #1e293b;
+    color: #94a3b8;
+    border: none;
+}
+
+.manager-btn-nav:hover {
+    background: #334155;
+    color: #ffffff;
 }
 
 #manager-dialog-body {
@@ -491,9 +508,9 @@ AgentManagerModal {
 }
 
 #manager-list-pane {
-    width: 38%;
+    width: 36%;
     height: 100%;
-    border-right: solid #273142;
+    border-right: solid #1e293b;
     padding-right: 1;
 }
 
@@ -510,7 +527,7 @@ AgentManagerModal {
     color: #38bdf8;
 }
 
-.manager-btn-accent-sm {
+.manager-btn-accent {
     min-width: 14;
     height: 3;
     background: #059669;
@@ -518,9 +535,24 @@ AgentManagerModal {
     text-style: bold;
 }
 
+.manager-btn-accent:hover {
+    background: #10b981;
+}
+
 #manager-agents-scroll {
     height: 1fr;
     overflow-y: auto;
+}
+
+#manager-list-footer {
+    height: 2;
+    padding-top: 1;
+    border-top: solid #1e293b;
+}
+
+#manager-list-count {
+    color: #64748b;
+    text-style: italic;
 }
 
 .manager-agent-item {
@@ -528,18 +560,19 @@ AgentManagerModal {
     height: auto;
     min-height: 3;
     margin-bottom: 1;
-    background: #1a2030;
+    background: #161d2d;
     color: #cbd5e1;
-    border-left: solid #6366f1;
+    border-left: solid #475569;
 }
 
 .manager-agent-item:hover {
-    background: #232d42;
+    background: #1e293b;
     color: #ffffff;
+    border-left: solid #38bdf8;
 }
 
 .manager-agent-item-selected {
-    background: #222d45;
+    background: #1e293b;
     border-left: thick #38bdf8;
     color: #38bdf8;
     text-style: bold;
@@ -550,13 +583,57 @@ AgentManagerModal {
 }
 
 #manager-form-pane {
-    width: 62%;
+    width: 64%;
     height: 100%;
     padding-left: 2;
     overflow-y: auto;
 }
 
+#manager-inspector-header {
+    height: 4;
+    layout: horizontal;
+    align: left middle;
+    background: #141c2c;
+    border-left: thick #38bdf8;
+    padding: 0 1;
+    margin-bottom: 1;
+}
+
+#inspector-preview-avatar {
+    width: 5;
+    text-style: bold;
+    color: #38bdf8;
+    content-align: center middle;
+}
+
+#inspector-preview-meta {
+    width: 1fr;
+    height: auto;
+}
+
 #manager-form-title {
+    text-style: bold;
+    color: #f1f5f9;
+}
+
+#inspector-preview-subtitle {
+    color: #64748b;
+    text-style: italic;
+}
+
+.manager-section-card {
+    height: auto;
+    background: #121826;
+    border: solid #1e293b;
+    padding: 1;
+    margin-bottom: 1;
+}
+
+.manager-section-title {
+    color: #94a3b8;
+    text-style: bold;
+    border-bottom: solid #1e293b;
+    padding-bottom: 0;
     margin-bottom: 1;
 }
 
@@ -597,6 +674,10 @@ AgentManagerModal {
     margin-right: 1;
 }
 
+.manager-btn-primary:hover {
+    background: #3b82f6;
+}
+
 .manager-btn-secondary {
     background: #d97706;
     color: #ffffff;
@@ -604,10 +685,18 @@ AgentManagerModal {
     margin-right: 1;
 }
 
+.manager-btn-secondary:hover {
+    background: #f59e0b;
+}
+
 .manager-btn-danger {
     background: #dc2626;
     color: #ffffff;
     text-style: bold;
+}
+
+.manager-btn-danger:hover {
+    background: #ef4444;
 }
 
 .manager-btn-neutral {
@@ -639,5 +728,10 @@ AgentManagerModal {
     color: #38bdf8;
     text-style: bold;
 }
+
+.manager-btn-xs:hover {
+    background: #334155;
+}
+
 
 
