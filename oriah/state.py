@@ -113,7 +113,8 @@ class AppState:
         self.agents: List[AgentConfig] = []
         if not self.load_agents_from_disk():
             self.agents = self._default_agents()
-        self.active_agent_id: str = self.agents[0].id if self.agents else ""
+        ordered = self.get_ordered_agents()
+        self.active_agent_id: str = ordered[0].id if ordered else (self.agents[0].id if self.agents else "")
         self.checklist: List[ChecklistItem] = self._default_checklist()
         self.tabs: List[EditorTab] = []
         self.active_tab_index: int = 0
@@ -150,15 +151,46 @@ class AppState:
                 if any(a.id == saved_active for a in self.agents):
                     self.active_agent_id = saved_active
                 else:
-                    self.active_agent_id = self.agents[0].id
+                    ordered = self.get_ordered_agents()
+                    self.active_agent_id = ordered[0].id if ordered else self.agents[0].id
                 return True
         except Exception as e:
             # Fall back to defaults on corrupt config
             pass
         return False
 
+    @staticmethod
+    def is_lead_agent(agent: AgentConfig) -> bool:
+        """Check if an agent is designated as the Lead Orchestrator."""
+        role = (agent.role or "").lower()
+        name = (agent.name or "").lower()
+        aid = (agent.id or "").lower()
+        return "lead" in role or "lead" in name or aid in ("agent-lead", "lead")
+
+    def get_ordered_agents(self) -> List[AgentConfig]:
+        """Return agents with the Lead Agent guaranteed to appear first always."""
+        if not self.agents:
+            return []
+        leads = [a for a in self.agents if self.is_lead_agent(a)]
+        non_leads = [a for a in self.agents if not self.is_lead_agent(a)]
+        if not leads:
+            return list(self.agents)
+        return leads + non_leads
+
     def _default_agents(self) -> List[AgentConfig]:
         return [
+            AgentConfig(
+                id="agent-lead",
+                name="Lead Orchestrator",
+                model="qwen3:14b",
+                provider="Ollama (Local)",
+                role="Lead Orchestrator",
+                instructions="Analyzes user tasks, decomposes goals, and coordinates specialized subagents.",
+                status="Idle",
+                badge_color="#6366f1",
+                avatar="◈",
+                base_url="http://localhost:11434/v1",
+            ),
             AgentConfig(
                 id="agent-1",
                 name="Gemma 2 Coder",

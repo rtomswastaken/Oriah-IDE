@@ -269,9 +269,14 @@ Screen {
     background: #192233;
 }
 
+.agent-card.lead-agent {
+    border-top: solid #38bdf8;
+}
+
 .agent-card-header {
     height: 2;
     layout: horizontal;
+    align: left middle;
 }
 
 .agent-card-avatar {
@@ -283,6 +288,14 @@ Screen {
     text-style: bold;
     color: #f1f5f9;
     width: 1fr;
+}
+
+.agent-card-lead-badge {
+    height: 1;
+    padding: 0 1;
+    background: #1e3a8a;
+    color: #38bdf8;
+    text-style: bold;
 }
 
 .agent-card-badge {
@@ -303,6 +316,20 @@ Screen {
     color: #10b981;
     margin-top: 1;
     text-style: italic;
+}
+
+.agent-card-status.status-running {
+    color: #38bdf8;
+    text-style: bold;
+}
+
+.agent-card-status.status-error {
+    color: #ef4444;
+    text-style: bold;
+}
+
+.agent-card-status.status-idle {
+    color: #10b981;
 }
 
 /* Plus Add Agent Card */

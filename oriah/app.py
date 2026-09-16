@@ -208,33 +208,43 @@ class OriahIDE(App):
         )
         engine = AsyncEngine(config=config)
         try:
+            agent_panel.update_agent_status(agent.id, "Running")
             async for ev in engine.run(prompt):
                 if isinstance(ev, TaskStarted):
                     self.set_status(f"◈ Task started ({ev.task_id[:8]})...")
+                    agent_panel.update_agent_status(agent.id, "Running")
                 elif isinstance(ev, AgentThought):
                     agent_panel.append_log(f"◈ [{ev.agent_id}] {ev.thought}")
+                    agent_panel.update_agent_status(agent.id, "Thinking")
                 elif isinstance(ev, ToolCallRequested):
                     agent_panel.append_log(f"  ◈ Tool: {ev.tool_name}({list(ev.arguments.keys())})")
+                    agent_panel.update_agent_status(agent.id, f"Tool: {ev.tool_name}")
                 elif isinstance(ev, ToolCallCompleted):
                     if ev.error:
                         agent_panel.append_log(f"  ✕ Error: {ev.error}")
+                        agent_panel.update_agent_status(agent.id, "Tool Error")
                     else:
                         snippet = (ev.result or "")[:80].replace("\n", " ")
                         agent_panel.append_log(f"  ✓ Result: {snippet}...")
+                        agent_panel.update_agent_status(agent.id, "Working")
                         if ev.tool_name in ("write_file", "patch_file"):
                             self._refresh_workspace_ui()
                 elif isinstance(ev, SubagentSpawned):
                     agent_panel.append_log(f"  ◈ Spawned subagent [{ev.child_id}] ({ev.role})")
+                    agent_panel.handle_subagent_spawned(ev.child_id, ev.role)
                 elif isinstance(ev, TaskFinished):
                     if ev.status == "success":
                         agent_panel.append_log(f"✓ Finished: {ev.summary}")
+                        agent_panel.reset_all_agent_statuses("Idle")
                         self.set_status("Ready")
                     else:
                         agent_panel.append_log(f"✕ Failed: {ev.error}")
+                        agent_panel.update_agent_status(agent.id, "Error")
                         self.set_status("Error")
                     self._refresh_workspace_ui()
         except Exception as e:
             agent_panel.append_log(f"✕ Agent error: {str(e)}")
+            agent_panel.update_agent_status(agent.id, "Error")
             self.set_status("Agent error")
         finally:
             await engine.aclose()

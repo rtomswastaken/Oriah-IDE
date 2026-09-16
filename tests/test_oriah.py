@@ -369,6 +369,58 @@ class TestOriahHeadlessApp(unittest.IsolatedAsyncioTestCase):
                 await pilot.pause(0.2)
                 self.assertIn("gpt-4o", [val for _, val in local_select._options])
 
+    async def test_lead_agent_always_first_and_dynamic_state_updates(self):
+        import tempfile
+        from oriah.widgets.agent_panel import AgentCardWidget, AgentModePanel
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            app = OriahIDE(root_dir=temp_dir)
+            async with app.run_test() as pilot:
+                agent_panel = app.query_one("#agent-mode-panel", AgentModePanel)
+                await pilot.pause(0.2)
+
+                # 1. Lead agent is ALWAYS first in the card list
+                cards = list(agent_panel.query(AgentCardWidget))
+                self.assertGreater(len(cards), 0)
+                first_card = cards[0]
+                self.assertTrue(first_card.is_lead)
+                self.assertIn("lead", first_card.agent.role.lower())
+                self.assertTrue(first_card.has_class("lead-agent"))
+
+                # 2. Dynamic state updates
+                lead_id = first_card.agent.id
+                agent_panel.update_agent_status(lead_id, "Thinking")
+                await pilot.pause(0.1)
+                status_label = first_card.query_one(".agent-card-status")
+                self.assertIn("Thinking", str(status_label.render()))
+                self.assertTrue(status_label.has_class("status-running"))
+
+                agent_panel.update_agent_status(lead_id, "Tool: patch_file")
+                await pilot.pause(0.1)
+                self.assertIn("Tool: patch_file", str(status_label.render()))
+
+                agent_panel.reset_all_agent_statuses("Idle")
+                await pilot.pause(0.1)
+                self.assertIn("Idle", str(status_label.render()))
+                self.assertTrue(status_label.has_class("status-idle"))
+
+                # 3. Dynamic subagent spawning
+                agent_panel.handle_subagent_spawned("child-sub-99", "researcher")
+                await pilot.pause(0.2)
+                updated_cards = list(agent_panel.query(AgentCardWidget))
+                # Lead agent MUST STILL BE FIRST
+                self.assertTrue(updated_cards[0].is_lead)
+                self.assertEqual(updated_cards[0].agent.id, lead_id)
+
+                # 4. Switching active agent preserves lead agent at index 0
+                second_agent = updated_cards[1].agent
+                app.state.active_agent_id = second_agent.id
+                agent_panel.refresh_cards()
+                await pilot.pause(0.2)
+                cards_after_switch = list(agent_panel.query(AgentCardWidget))
+                self.assertTrue(cards_after_switch[0].is_lead)
+                self.assertEqual(cards_after_switch[0].agent.id, lead_id)
+
 
 if __name__ == "__main__":
     unittest.main()

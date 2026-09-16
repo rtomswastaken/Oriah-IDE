@@ -189,7 +189,7 @@ class AgentManagerModal(ModalScreen[bool]):
                         yield Button("+ New Agent", id="manager-btn-new", classes="manager-btn-accent")
 
                     with VerticalScroll(id="manager-agents-scroll"):
-                        for agent in self.state.agents:
+                        for agent in self.state.get_ordered_agents():
                             yield self._build_agent_item_widget(agent)
 
                     with Horizontal(id="manager-list-footer"):
@@ -304,9 +304,11 @@ class AgentManagerModal(ModalScreen[bool]):
     def _build_agent_item_widget(self, agent: AgentConfig) -> Button:
         is_active = agent.id == self.state.active_agent_id
         is_selected = agent.id == self.selected_agent_id
+        is_lead = self.state.is_lead_agent(agent)
+        lead_badge = " ◈ LEAD" if is_lead else ""
         active_badge = " ★ ACTIVE" if is_active else ""
         glyph = self._get_clean_glyph(agent.avatar)
-        label_text = f"{glyph} {agent.name}\n   [{agent.provider}] {agent.model}{active_badge}"
+        label_text = f"{glyph} {agent.name}{lead_badge}\n   [{agent.provider}] {agent.model}{active_badge}"
         classes = "manager-agent-item"
         if is_selected:
             classes += " manager-agent-item-selected"
@@ -318,7 +320,7 @@ class AgentManagerModal(ModalScreen[bool]):
     async def _refresh_agent_list(self) -> None:
         scroll = self.query_one("#manager-agents-scroll", VerticalScroll)
         await scroll.remove_children()
-        for agent in self.state.agents:
+        for agent in self.state.get_ordered_agents():
             await scroll.mount(self._build_agent_item_widget(agent))
         try:
             count_label = self.query_one("#manager-list-count", Label)
