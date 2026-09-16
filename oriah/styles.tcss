@@ -610,3 +610,34 @@ AgentManagerModal {
     text-style: bold;
 }
 
+.manager-btn-neutral {
+    background: #334155;
+    color: #f1f5f9;
+    text-style: bold;
+    margin-right: 1;
+}
+
+.manager-btn-neutral:hover {
+    background: #475569;
+}
+
+.manager-row-header {
+    height: 3;
+    layout: horizontal;
+    align: left middle;
+    margin-top: 1;
+}
+
+.manager-row-header Label {
+    width: 1fr;
+}
+
+.manager-btn-xs {
+    min-width: 12;
+    height: 3;
+    background: #1e293b;
+    color: #38bdf8;
+    text-style: bold;
+}
+
+

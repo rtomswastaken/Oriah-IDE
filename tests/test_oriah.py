@@ -13,7 +13,12 @@ from oriah.widgets.terminal_panel import TerminalPanel
 
 class TestOriahState(unittest.TestCase):
     def setUp(self):
-        self.state = AppState(root_dir=".")
+        import tempfile
+        self._temp_dir = tempfile.TemporaryDirectory()
+        self.state = AppState(root_dir=self._temp_dir.name)
+
+    def tearDown(self):
+        self._temp_dir.cleanup()
 
     def test_default_agents(self):
         self.assertGreaterEqual(len(self.state.agents), 3)
@@ -147,60 +152,63 @@ class TestOriahState(unittest.TestCase):
 
 class TestOriahHeadlessApp(unittest.IsolatedAsyncioTestCase):
     async def test_app_composition_and_mode_toggle(self):
-        app = OriahIDE(root_dir=".")
-        async with app.run_test() as pilot:
-            # Check all 4 quadrants mounted
-            self.assertIsNotNone(app.query_one(DirectoryPanel))
-            self.assertIsNotNone(app.query_one(ChecklistPanel))
-            self.assertIsNotNone(app.query_one(EditorPanel))
-            self.assertIsNotNone(app.query_one(AgentModePanel))
-            self.assertIsNotNone(app.query_one(TerminalPanel))
+        import tempfile
+        with tempfile.TemporaryDirectory() as temp_dir:
+            app = OriahIDE(root_dir=temp_dir)
+            async with app.run_test() as pilot:
+                # Check all 4 quadrants mounted
+                self.assertIsNotNone(app.query_one(DirectoryPanel))
+                self.assertIsNotNone(app.query_one(ChecklistPanel))
+                self.assertIsNotNone(app.query_one(EditorPanel))
+                self.assertIsNotNone(app.query_one(AgentModePanel))
+                self.assertIsNotNone(app.query_one(TerminalPanel))
 
-            # Initial mode should be agent
-            agent_panel = app.query_one("#agent-mode-panel", AgentModePanel)
-            terminal_panel = app.query_one("#terminal-panel", TerminalPanel)
-            self.assertTrue(agent_panel.display)
-            self.assertFalse(terminal_panel.display)
+                # Initial mode should be agent
+                agent_panel = app.query_one("#agent-mode-panel", AgentModePanel)
+                terminal_panel = app.query_one("#terminal-panel", TerminalPanel)
+                self.assertTrue(agent_panel.display)
+                self.assertFalse(terminal_panel.display)
 
-            # Toggle to terminal mode via action
-            app.action_toggle_bottom_mode()
-            await pilot.pause()
-            self.assertFalse(agent_panel.display)
-            self.assertTrue(terminal_panel.display)
+                # Toggle to terminal mode via action
+                app.action_toggle_bottom_mode()
+                await pilot.pause()
+                self.assertFalse(agent_panel.display)
+                self.assertTrue(terminal_panel.display)
 
-            # Test terminal command execution
-            terminal_panel.run_command("echo 'testing terminal runner'")
-            await pilot.pause(0.2)
-            self.assertIn("echo 'testing terminal runner'", app.state.terminal_history)
+                # Test terminal command execution
+                terminal_panel.run_command("echo 'testing terminal runner'")
+                await pilot.pause(0.2)
+                self.assertIn("echo 'testing terminal runner'", app.state.terminal_history)
 
-            # Toggle back to agent mode
-            app.action_toggle_bottom_mode()
-            await pilot.pause()
-            self.assertTrue(agent_panel.display)
-            self.assertFalse(terminal_panel.display)
+                # Toggle back to agent mode
+                app.action_toggle_bottom_mode()
+                await pilot.pause()
+                self.assertTrue(agent_panel.display)
+                self.assertFalse(terminal_panel.display)
 
-            # Test prompt submission in Agent Mode
-            prompt_input = agent_panel.query_one("#agent-prompt-input")
-            prompt_input.value = "Write a binary search in Rust"
-            agent_panel._submit_prompt()
-            await pilot.pause(0.2)
-            self.assertTrue(any("Write a binary search in Rust" in line for line in app.state.agent_logs))
+                # Test prompt submission in Agent Mode
+                prompt_input = agent_panel.query_one("#agent-prompt-input")
+                prompt_input.value = "Write a binary search in Rust"
+                agent_panel._submit_prompt()
+                await pilot.pause(0.2)
+                self.assertTrue(any("Write a binary search in Rust" in line for line in app.state.agent_logs))
 
-            # Test saving editor file via action
-            app.action_save_file()
-            await pilot.pause()
+                # Test saving editor file via action
+                app.action_save_file()
+                await pilot.pause()
 
-            # Test adding an agent programmatically
-            new_agent = app.state.add_agent(
-                name="Gemma Code Reviewer",
-                model="gemma2:9b",
-                provider="Ollama (Local)",
-                role="Code Auditor",
-            )
-            agent_panel.refresh_cards()
-            await pilot.pause()
-            self.assertIn(new_agent, app.state.agents)
-            self.assertEqual(app.state.active_agent_id, new_agent.id)
+                # Test adding an agent programmatically
+                new_agent = app.state.add_agent(
+                    name="Gemma Code Reviewer",
+                    model="gemma2:9b",
+                    provider="Ollama (Local)",
+                    role="Code Auditor",
+                )
+                agent_panel.refresh_cards()
+                await pilot.pause()
+                self.assertIn(new_agent, app.state.agents)
+                self.assertEqual(app.state.active_agent_id, new_agent.id)
+
 
     async def test_agent_manager_modal_interaction(self):
         import tempfile
@@ -280,6 +288,53 @@ class TestOriahHeadlessApp(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(prompt_arg, "Create test suite for auth")
                     self.assertEqual(agent_arg.id, app.state.active_agent_id)
 
+    async def test_agent_manager_local_models_dropdown_and_back_button(self):
+        import tempfile
+        from oriah.widgets.agent_manager_modal import AgentManagerModal
+        from textual.widgets import Select, Button, Input
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            app = OriahIDE(root_dir=temp_dir)
+            async with app.run_test() as pilot:
+                app.action_manage_agents()
+                await pilot.pause(0.2)
+                self.assertIsInstance(app.screen, AgentManagerModal)
+                modal = app.screen
+
+                # Verify local models dropdown exists
+                local_select = modal.query_one("#agent-form-local-models", Select)
+                self.assertIsNotNone(local_select)
+
+                # Verify Back button exists in form actions
+                back_btn = modal.query_one("#manager-btn-back", Button)
+                self.assertIsNotNone(back_btn)
+
+                # Switch to new agent form
+                new_btn = modal.query_one("#manager-btn-new", Button)
+                new_btn.press()
+                await pilot.pause(0.1)
+                self.assertTrue(modal.is_creating_new)
+
+                # Pressing Back button reverts new agent creation
+                back_btn.press()
+                await pilot.pause(0.1)
+                self.assertFalse(modal.is_creating_new)
+                self.assertIsInstance(app.screen, AgentManagerModal)
+
+                # Pressing Back button from viewing agent dismisses modal
+                back_btn.press()
+                await pilot.pause(0.2)
+                self.assertNotIsInstance(app.screen, AgentManagerModal)
+
+                # Re-open and test Escape key binding dismisses modal
+                app.action_manage_agents()
+                await pilot.pause(0.2)
+                self.assertIsInstance(app.screen, AgentManagerModal)
+                await pilot.press("escape")
+                await pilot.pause(0.2)
+                self.assertNotIsInstance(app.screen, AgentManagerModal)
+
 
 if __name__ == "__main__":
     unittest.main()
+
