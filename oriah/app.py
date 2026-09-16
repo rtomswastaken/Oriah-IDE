@@ -10,6 +10,7 @@ from textual.widgets import Button, Footer, Header, Label
 
 from oriah.state import AppState
 from oriah.widgets.add_agent_modal import AddAgentModal
+from oriah.widgets.agent_manager_modal import AgentManagerModal
 from oriah.widgets.agent_panel import AgentModePanel
 from oriah.widgets.checklist_panel import ChecklistPanel
 from oriah.widgets.directory_panel import DirectoryPanel
@@ -27,7 +28,8 @@ class OriahIDE(App):
     BINDINGS = [
         Binding("ctrl+s", "save_file", "Save File", priority=True),
         Binding("ctrl+t", "toggle_bottom_mode", "Toggle Terminal / Agent Mode", priority=True),
-        Binding("ctrl+n", "add_agent", "Add Agent", priority=True),
+        Binding("ctrl+m", "manage_agents", "Manage Agents", priority=True),
+        Binding("ctrl+n", "manage_agents", "Add / Manage Agents", priority=True),
         Binding("ctrl+w", "close_tab", "Close Tab", priority=True),
         Binding("ctrl+q", "quit", "Quit Oriah", priority=True),
     ]
@@ -149,33 +151,35 @@ class OriahIDE(App):
             editor.display_active_tab()
             self.set_status(f"Closed tab: {closed.filename}")
 
-    def action_add_agent(self) -> None:
-        """Open the Add Agent Modal dialog."""
-
-        def _handle_agent_result(result: Optional[dict]) -> None:
-            if not result:
-                return
-            new_agent = self.state.add_agent(
-                name=result["name"],
-                model=result["model"],
-                provider=result["provider"],
-                role=result["role"],
-                instructions=result.get("instructions", ""),
-            )
-            # Refresh agent cards
+    def action_manage_agents(self) -> None:
+        """Open the Multi-Agent & API Management Modal dialog."""
+        def _handle_manage_result(changed: Optional[bool]) -> None:
             agent_panel = self.query_one(AgentModePanel)
             agent_panel.refresh_cards()
-            # Update status
-            self.set_status(f"✨ Attached agent: {new_agent.name} ({new_agent.model})")
-            agent_label = self.query_one("#status-agent-label", Label)
-            agent_label.update(f"  |  Active Agent: {new_agent.name}")
+            active = self.state.get_active_agent()
+            if active:
+                self.set_status(f"⚙️ Configured agents: {len(self.state.agents)} | Active: {active.name}")
+                try:
+                    agent_label = self.query_one("#status-agent-label", Label)
+                    agent_label.update(f"  |  Active Agent: {active.name}")
+                except Exception:
+                    pass
 
-        self.push_screen(AddAgentModal(), _handle_agent_result)
+        self.push_screen(AgentManagerModal(self.state), _handle_manage_result)
+
+    def action_add_agent(self) -> None:
+        """Alias for manage agents modal."""
+        self.action_manage_agents()
+
+    def on_agent_mode_panel_manage_agents_requested(
+        self, event: AgentModePanel.ManageAgentsRequested
+    ) -> None:
+        self.action_manage_agents()
 
     def on_agent_mode_panel_add_agent_requested(
         self, event: AgentModePanel.AddAgentRequested
     ) -> None:
-        self.action_add_agent()
+        self.action_manage_agents()
 
     def on_agent_mode_panel_prompt_submitted(
         self, event: AgentModePanel.PromptSubmitted

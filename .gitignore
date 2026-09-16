@@ -38,3 +38,5 @@ Thumbs.db
 
 # Local agent config
 AGENTS.md
+.oriah/
+welcome.py

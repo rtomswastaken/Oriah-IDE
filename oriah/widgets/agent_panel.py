@@ -38,22 +38,26 @@ class AgentCardWidget(Vertical):
         self.post_message(self.Selected(self.agent))
 
 
-class AddAgentButtonCard(Vertical):
-    """Circular/Plus card to trigger the Add Agent modal (Wireframe 3)."""
+class ManageAgentsButtonCard(Vertical):
+    """Button card to trigger the Agent Management Modal."""
 
     class Clicked(Message):
         pass
 
     def __init__(self) -> None:
-        unique_id = f"add-agent-btn-{uuid.uuid4().hex[:6]}"
-        super().__init__(id=unique_id, classes="add-agent-card")
+        unique_id = f"manage-agents-btn-{uuid.uuid4().hex[:6]}"
+        super().__init__(id=unique_id, classes="add-agent-card manage-agents-card")
 
     def compose(self) -> ComposeResult:
-        yield Label("⊕", classes="add-agent-icon")
-        yield Label("Add Agent", classes="add-agent-text")
+        yield Label("⚙️", classes="add-agent-icon")
+        yield Label("Manage Agents", classes="add-agent-text")
 
     def on_click(self) -> None:
         self.post_message(self.Clicked())
+
+
+# Backwards compatibility alias
+AddAgentButtonCard = ManageAgentsButtonCard
 
 
 class AgentModePanel(Vertical):
@@ -74,6 +78,9 @@ class AgentModePanel(Vertical):
             self.prompt = prompt
 
     class AddAgentRequested(Message):
+        pass
+
+    class ManageAgentsRequested(Message):
         pass
 
     def __init__(self, state: AppState, id: str = "agent-mode-panel") -> None:
@@ -126,7 +133,8 @@ class AgentModePanel(Vertical):
         self.refresh_cards()
         self.append_log(f"🎯 Switched active agent to: {event.agent.name} ({event.agent.model})")
 
-    def on_add_agent_button_card_clicked(self, event: AddAgentButtonCard.Clicked) -> None:
+    def on_manage_agents_button_card_clicked(self, event: ManageAgentsButtonCard.Clicked) -> None:
+        self.post_message(self.ManageAgentsRequested())
         self.post_message(self.AddAgentRequested())
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
