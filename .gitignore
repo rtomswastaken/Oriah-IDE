@@ -38,5 +38,11 @@ Thumbs.db
 
 # Local agent config
 AGENTS.md
+GEMINI.md
 .oriah/
 welcome.py
+
+# Packaging & cache
+*.egg-info/
+.pytest_cache/
+
