@@ -623,23 +623,27 @@ AgentManagerModal {
 
 .manager-section-card {
     height: auto;
-    background: #121826;
-    border: solid #1e293b;
-    padding: 1;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
     margin-bottom: 1;
 }
 
 .manager-section-title {
-    color: #94a3b8;
+    color: #38bdf8;
     text-style: bold;
     border-bottom: solid #1e293b;
     padding-bottom: 0;
-    margin-bottom: 1;
+    margin-top: 1;
+    margin-bottom: 0;
+    height: auto;
 }
 
 .manager-field-label {
     color: #94a3b8;
     margin-top: 1;
+    height: auto;
 }
 
 .manager-row-2col {
@@ -649,6 +653,7 @@ AgentManagerModal {
 
 .manager-row-2col > Vertical {
     width: 1fr;
+    height: auto;
     margin-right: 1;
 }
 
