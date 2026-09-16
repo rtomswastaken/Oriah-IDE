@@ -206,7 +206,7 @@ class AppState:
             ChecklistItem(id="c-5", title="Multi-Agent API Manager & Config Menu", done=True, category="Agent"),
             ChecklistItem(id="c-6", title="Terminal Console & Output Screen", done=True, category="Terminal"),
             ChecklistItem(id="c-7", title="Wireframe 1:1 Layout Fidelity", done=True, category="UI"),
-            ChecklistItem(id="c-8", title="Teammate Backend Agent Hooks Integration", done=False, category="Backend"),
+            ChecklistItem(id="c-8", title="Teammate Backend Agent Hooks Integration", done=True, category="Backend"),
         ]
 
     def get_active_agent(self) -> Optional[AgentConfig]:

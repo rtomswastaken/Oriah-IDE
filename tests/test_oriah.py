@@ -262,6 +262,24 @@ class TestOriahHeadlessApp(unittest.IsolatedAsyncioTestCase):
                 # Back to main screen
                 self.assertNotIsInstance(app.screen, AgentManagerModal)
 
+    async def test_backend_agent_execution_hook(self):
+        import tempfile
+        from unittest.mock import AsyncMock, patch
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            app = OriahIDE(root_dir=temp_dir)
+            async with app.run_test() as pilot:
+                agent_panel = app.query_one("#agent-mode-panel", AgentModePanel)
+                with patch.object(app, "_execute_backend_agent", new_callable=AsyncMock) as mock_exec:
+                    prompt_input = agent_panel.query_one("#agent-prompt-input")
+                    prompt_input.value = "Create test suite for auth"
+                    agent_panel._submit_prompt()
+                    await pilot.pause(0.2)
+                    mock_exec.assert_called_once()
+                    agent_arg, prompt_arg = mock_exec.call_args[0]
+                    self.assertEqual(prompt_arg, "Create test suite for auth")
+                    self.assertEqual(agent_arg.id, app.state.active_agent_id)
+
 
 if __name__ == "__main__":
     unittest.main()
