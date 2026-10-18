@@ -3,7 +3,6 @@
 A terminal-based development environment and multi-agent workflow engine built with Python, Textual, and Pygments.
 
 ## Overview
-
 Oriah IDE combines a terminal user interface (TUI) with an asynchronous ReAct agent engine. It allows developers to browse files, edit code with syntax highlighting, run shell commands, and dispatch coding or debugging tasks to local or remote language models.
 
 The agent engine supports role specialization, workspace-bounded tool execution, subagent delegation, and dynamic custom roles and tools defined within the project workspace.
